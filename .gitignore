@@ -1,0 +1,7 @@
+*.pyc
+*.*~
+.gitignore
+plots
+.DS_Store
+data
+examples
