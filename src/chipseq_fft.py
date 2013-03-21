@@ -16,9 +16,8 @@ import argparse
 import numpy as np
 import pylab as pl
 from matplotlib import mlab
-import randdata as rd
 from dataprep import DataPrep
-from smooth import smooth
+import plots
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(\
@@ -39,16 +38,10 @@ if __name__ == "__main__":
     else:
         bgfile = args.bgfile
 
-    bgcounts = np.recfromtxt(bgfile, dtype=int, names=True)
-    counts = np.recfromtxt(args.file, names=True, dtype=int)
-#    dp.counts[:] = 1
-
-    # counts = rd.poission(100000, 1)
-    # bgcounts = rd.poission(100000, 1)
-    # counts = rd.add_gaps(counts, 300, 150)
-
-#    bgcounts = rd.add_gabs(bgcounts, 0.47, 50, 0)
-#    import pdb; pdb.set_trace()
+    bgcounts = np.recfromtxt(bgfile, comments="#", delimiter="\t", dtype=int,
+                             names=True)
+    counts = np.recfromtxt(args.file, comments="#", delimiter="\t", names=True,
+                           dtype=int)
 
     dp = DataPrep(counts, bgcounts, crop=args.crop,
                   fill=args.fill, normalize=False)
@@ -56,46 +49,9 @@ if __name__ == "__main__":
 
     smoo = dp.counts #smooth(dp.counts, 0)
 
-    fig = pl.figure()
-    ax = fig.add_subplot(111)
-    npoints = 30000
-    idx = range(0, dp.position.size,
-                int(max(round(dp.position.size/npoints, 0), 1)))
-    ax.set_title("Samples")
-    ax.plot(dp.position[idx], smoo[idx], "o-", label="peaks")
-
-    # fig = pl.figure()
-    # ax = fig.add_subplot(111)
-    # ax.set_title("Power spectrum")
-    # pxx, f = ax.psd(dp.counts, Fs=0.1, NFFT=512, noverlap=256)
-
-    # spectram
-    # fig = pl.figure()
-    # ax = fig.add_subplot(111)
-    # ax.specgram(dp.counts, Fs=0.1)
-
-    fig = pl.figure()
-    ax = fig.add_subplot(111)
-    ax.set_title("Power spectrum")
-    pxx, f = mlab.psd(smoo, Fs=0.1, NFFT=512, window=mlab.window_none)
-    #ax.plot(f, 10*np.log10(pxx), "x-", label="Power Spectral Density")
-    ax.plot(f, pxx, "x-", label="Power Spectral Density")
-    # ax.set_xlim((0.0, 5e-5))
-    ax.set_xlabel("wave number (1/bp)")
-    ax.set_ylabel("power spectral density (dB/bp)")
-
-    # fig = pl.figure()
-    # ax = fig.add_subplot(111)
-    # ax.set_title("gap lenght ")
-    # ax.hist(dp.gap_length, bins=150, normed=True)
-    # # ax.bar(np.arange(dp.gap_length.size), dp.gap_length)
-    # # ax.plot(dp.gap_position, dp.gap_length, "o")
-    # # ax.set_xticks([str(i) for i in dp.gap_position])
-
-    fig = pl.figure()
-    ax = fig.add_subplot(111)
-    ax.set_title("counts (normalized)")
-    ax.hist(dp.counts, bins=25, normed=True)
-
-
-    pl.show()
+    plots.samples(dp.position, dp.counts)
+    # xlim = (0.0, 5e-5)
+    plots.psd(dp.counts, xlim=None, Fs=0.1, NFFT=512, window=mlab.window_none)
+    plots.counts(dp.counts, bins=50, normed=True)
+#    plots.gaps(dp.gap_position, dp.gap_length, bins=100, normed=True)
+    plots.show()
