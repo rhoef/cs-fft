@@ -14,7 +14,6 @@ __licence__ = 'LGPL'
 
 import argparse
 import numpy as np
-import pylab as pl
 from matplotlib import mlab
 from dataprep import DataPrep
 import plots

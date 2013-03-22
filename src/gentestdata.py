@@ -26,17 +26,31 @@ def write_files(filename, position, counts, delimiter='\t'):
     with open(filename, "w") as fp:
         # fp.write('# '+" ".join(sys.argv))
         # fp.write('\n')
-        fp.write('''"position"%s"counts\n''' %args.delimiter)
+        fp.write('''"position"%s"counts\n''' %delimiter)
         for pos, count in zip(positions, counts):
-            fp.write("%d%s%d\n" %(pos, args.delimiter, count))
+            fp.write("%d%s%d\n" %(pos, delimiter, count))
 
     # background measurement
     with open(filename.replace(".txt", "_background.txt"), "w") as fp:
         # fp.write('# '+" ".join(sys.argv))
         # fp.write('\n')
-        fp.write('''"position"%s"counts\n''' %args.delimiter)
+        fp.write('''"position"%s"counts\n''' %delimiter)
         for pos in positions:
-            fp.write("%d%s1\n" %(pos, args.delimiter))
+            fp.write("%d%s1\n" %(pos, delimiter))
+
+
+def add_counts(counts, lambda_, ratio):
+    while True:
+        pos = np.random.randint(0, counts.size)
+        length = 10 + np.random.poisson(1)
+        # import pdb; pdb.set_trace()
+        height = np.int_(np.random.exponential(lambda_))
+        # height = np.random.poisson(1)
+        counts[pos:pos+length] += height
+
+        if float(counts[counts==0].size)/counts.size < (1-ratio):
+            break
+    return counts
 
 
 if __name__ == "__main__":
@@ -47,53 +61,31 @@ if __name__ == "__main__":
                               "automatically)"))
     parser.add_argument('--plot', action='store_true',
                         help='Plots the data')
-    parser.add_argument('-n', '--nsamples', dest="nsamples", default=10000,
-                        type=int,
-                        help='Number of samples (default=10000)')
-    parser.add_argument('-s', '--start', dest='start', default=0, type=int,
-                        help="Start position (default=0)")
-    parser.add_argument('-g', '--ngaps', dest='ngaps', type=int, default=50,
-                         help="Number of gaps in %% of nsamples (default=50)")
-    parser.add_argument('-l', '--length', dest='length', type=int, default=10,
-                        help=("Mean gap length, base on an exponential dist. "
-                              "(default=50))"))
-    parser.add_argument('-p', '--npeaks', dest='npeaks', type=int, default=50,
-                        help='Number of peaks (default=50)')
-    parser.add_argument('-c', '--height', dest='height', type=int, default=85,
-                        help='Mean peak height (default=185)')
-    parser.add_argument('-b', '--background', dest='mean_background', type=float,
-                        default=2,
-                        help=(('Mean background, base on a poisson dist. '
-                               '(default=3)')))
-    parser.add_argument('-d', '--delimiter', default='\t', dest='delimiter',
-                        type=str,
-                        help='delimiter')
+    parser.add_argument('-n', '--nsamples', dest="nsamples", default=100,
+                        type=int, help='Number of samples (default=10000)')
+    parser.add_argument('-r' '--ratio', dest='ratio', type=float, default=0.2,
+                        help=("Rel. amount of background (default=0.2%%"))
+    parser.add_argument('-p', '--peaks-ratio', dest='pratio', type=float,
+                        default=0.01,
+                        help='Amount of peaks (default=0.01%%)')
+    parser.add_argument('-b', '--background', dest='background', type=float,
+                        default=0.25,
+                        help="Default background (mean of an exponential dist.)")
+    parser.add_argument('-t', '--pheight', dest='pheight', type=float,
+                        default=10.0,
+                        help="Default peak-height (mean of an exponential dist.)")
     args = parser.parse_args()
 
-    # noisy background
-    positions = np.arange(0, args.nsamples, 1, dtype=int)
-    counts = np.random.exponential(args.mean_background, positions.size)
-    counts = np.int_(np.round(counts, 0))
+    # empty arrays
+    positions = np.arange(0, args.nsamples, 10, dtype=int)
+    counts = np.zeros(positions.shape, dtype=int)
 
-    # delete data supposed to represent the gaps
-    gpos = np.random.permutation(positions)[:args.ngaps]
-    gidx = []
-    glen = np.int_(np.random.exponential(round(args.length), size=gpos.size))
-    for pos, length in zip(gpos, glen):
-        gidx.extend(range(pos, pos+length, 1))
 
-    positions = np.delete(positions, gidx)
-    counts = np.delete(counts, gidx)
+    # add some peaks
+    counts = add_counts(counts, args.pheight, ratio=args.pratio)
+    # fill with background
+    counts = add_counts(counts, args.background, ratio=args.ratio)
 
-    # add some random peaks
-    pheight = np.int_(np.random.exponential(round(args.height), size=args.npeaks))
-    if args.nsamples < args.npeaks:
-        raise ValueError("Number of samples must be larger than number of peaks")
-    if pheight.size > counts.size:
-        import pdb; pdb.set_trace()
-        raise ValueError("Array must be larger than number of peaks")
-    counts[:args.npeaks] = pheight
-    np.random.shuffle(counts)
 
     if args.plot:
         fig = pl.figure()
@@ -106,4 +98,4 @@ if __name__ == "__main__":
         positions = sorted(positions)
         #func = lambda positions: positions
         #counts = sorted(counts, key=func)
-        write_files(args.file, positions, counts, args.delimiter)
+        write_files(args.file, positions, counts)
