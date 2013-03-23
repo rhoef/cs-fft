@@ -38,7 +38,6 @@ def write_files(filename, position, counts, delimiter='\t'):
         for pos in positions:
             fp.write("%d%s1\n" %(pos, delimiter))
 
-
 def add_counts(counts, lambda_, ratio):
     while True:
         pos = np.random.randint(0, counts.size)
@@ -48,7 +47,9 @@ def add_counts(counts, lambda_, ratio):
         # height = np.random.poisson(1)
         counts[pos:pos+length] += height
 
-        if float(counts[counts==0].size)/counts.size < (1-ratio):
+        rat = float(counts[counts==0].size)/counts.size
+        #print rat, (1-ratio)
+        if rat < (1-ratio):
             break
     return counts
 

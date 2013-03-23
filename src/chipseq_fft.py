@@ -17,6 +17,8 @@ import numpy as np
 from matplotlib import mlab
 from dataprep import DataPrep
 import plots
+from smooth import smooth
+import scipy
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(\
@@ -42,15 +44,19 @@ if __name__ == "__main__":
     counts = np.recfromtxt(args.file, comments="#", delimiter="\t", names=True,
                            dtype=int)
 
+
+
     dp = DataPrep(counts, bgcounts, crop=args.crop,
                   fill=args.fill, normalize=False)
     dp.gap_stats()
 
-    smoo = dp.counts #smooth(dp.counts, 0)
+    # smoo = scipy.signal.medfilt(dp.counts, 11)
+    # smoo = smooth(dp.counts, 11)
+    smoo = dp.counts
 
-    plots.samples(dp.position, dp.counts)
+    plots.samples(dp.position, smoo)
     # xlim = (0.0, 5e-5)
-    plots.psd(dp.counts, xlim=None, Fs=0.1, NFFT=512, window=mlab.window_none)
-    plots.counts(dp.counts, bins=50, normed=True)
+    plots.psd(smoo, xlim=None, Fs=0.1, NFFT=512, window=mlab.window_none)
+    plots.counts(smoo, bins=50, normed=True)
 #    plots.gaps(dp.gap_position, dp.gap_length, bins=100, normed=True)
     plots.show()
