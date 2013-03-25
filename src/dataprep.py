@@ -13,7 +13,7 @@ __url__ = 'www.cellcognition.org'
 
 import numpy as np
 from scipy.stats.mstats import zscore
-
+from scipy.interpolate import InterpolatedUnivariateSpline
 
 class DataPrep(object):
 
@@ -103,3 +103,19 @@ class DataPrep(object):
 
         self.position = x0
         self.counts = y0
+
+class Spline(InterpolatedUnivariateSpline):
+
+    def __init__(self, *args, **kw):
+        super(Spline, self).__init__(*args, **kw)
+
+    def __call__(self, x):
+        x = super(Spline, self).__call__(x)
+        return x
+        #return self._torecarray(x)
+
+    def _torecarray(self, x, abscissa="position", ordinate="counts"):
+        x = np.array(zip(x, np.arange(x.size)),
+                     dtype=[(ordinate, float), (abscissa, int)])
+        x = x.view(np.recarray)
+        return x

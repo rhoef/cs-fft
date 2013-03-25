@@ -17,8 +17,8 @@ from matplotlib import mlab
 def show():
     pl.show()
 
-def samples(position, counts):
-    fig = pl.figure()
+def samples(position, counts, window_title=111):
+    fig = pl.figure(window_title)
     ax = fig.add_subplot(111)
     npoints = 30000
     idx = range(0, position.size,
@@ -27,8 +27,9 @@ def samples(position, counts):
     ax.plot(position[idx], counts[idx], "o-", label="peaks")
     return ax
 
-def psd(counts, exclude_zero=True, xlim=None, *args, **kw):
-    fig = pl.figure()
+def psd(counts, exclude_zero=True, xlim=None, window_title=111,
+        *args, **kw):
+    fig = pl.figure(window_title)
     ax = fig.add_subplot(111)
     ax.set_title("Power spectrum")
     pxx, f = mlab.psd(counts, *args, **kw)
@@ -43,29 +44,29 @@ def psd(counts, exclude_zero=True, xlim=None, *args, **kw):
     ax.set_ylabel("power spectral density (counts/bp)")
     return ax
 
-def counts(counts, *args, **kw):
-    fig = pl.figure()
+def counts(counts, window_title=111, *args, **kw):
+    fig = pl.figure(window_title)
     ax = fig.add_subplot(111)
     ax.set_title("counts (normalized)")
     ax.hist(counts, *args, **kw)
     return ax
 
-def spectgram(counts, fs=1):
-    fig = pl.figure()
+def spectgram(counts, fs=1, window_title=111):
+    fig = pl.figure(window_title)
     ax = fig.add_subplot(111)
     ax.specgram(counts, Fs=fs)
     return ax
 
-def psd2(counts, *args, **kw):
+def psd2(counts, window_title=111, *args, **kw):
     """Default function from matplotlib."""
-    fig = pl.figure()
+    fig = pl.figure(window_title)
     ax = fig.add_subplot(111)
     ax.set_title("Power spectrum")
     pxx, f = ax.psd(counts, *args, **kw)
     return ax
 
-def gaps(gaps_pos, gap_length, *args, **kw):
-    fig = pl.figure()
+def gaps(gaps_pos, gap_length, window_title=111, *args, **kw):
+    fig = pl.figure(window_title)
     ax = fig.add_subplot(111)
     ax.set_title("gap lenght")
     ax.hist(gap_length, *args, **kw)
