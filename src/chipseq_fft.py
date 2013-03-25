@@ -15,10 +15,9 @@ __licence__ = 'LGPL'
 import argparse
 import numpy as np
 from matplotlib import mlab
-from dataprep import DataPrep, Spline
+from dataprep import DataPrep
 import plots
 from smooth import smooth
-import scipy
 
 
 if __name__ == "__main__":
@@ -45,8 +44,6 @@ if __name__ == "__main__":
     counts = np.recfromtxt(args.file, comments="#", delimiter="\t", names=True,
                            dtype=int)
 
-
-
     dp = DataPrep(counts, bgcounts, crop=args.crop,
                   fill=args.fill, normalize=False)
     dp.gap_stats()
@@ -55,23 +52,12 @@ if __name__ == "__main__":
     # smoo = smooth(dp.counts, 11)
     smoo = dp.counts
 
-    spline = Spline(counts.position, counts.counts, k=5)
-    x = np.arange(dp.position.min(), dp.position.max(),
-                  np.diff(dp.position).min())
-    smoo2 = spline(x)
-
- #   import pdb; pdb.set_trace()
-
     ax = plots.samples(dp.position, dp.counts, window_title="orig. data")
     # ax.plot(x, smoo2, "rx-")
     # xlim = (0.0, 5e-5)
-    # plots.samples(x0, y0)
-    plots.samples(x, smoo2, window_title="Interpolated data")
-    plots.psd(smoo, xlim=None, Fs=0.1, NFFT=512, window=mlab.window_none,
+    plots.psd(smoo, xlim=(0.0, 5.e5), Fs=0.1, NFFT=200000,
+              window=mlab.window_none,
               window_title="Smoo")
-    # plots.psd(smoo2, xlim=None, Fs=0.1, NFFT=512,
-    #           window=mlab.window_none,
-    #           window_title="Interpolated")
  #   plots.counts(smoo, bins=50, normed=True)
 #    plots.gaps(dp.gap_position, dp.gap_length, bins=100, normed=True)
     plots.show()
