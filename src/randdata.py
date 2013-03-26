@@ -1,8 +1,7 @@
 """
 randdata.py
 
-Generate random data data
-
+Generate random data written to text files
 """
 
 __author__ = 'rudolf.hoefler@gmail.com'

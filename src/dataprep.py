@@ -14,6 +14,7 @@ __url__ = 'www.cellcognition.org'
 import numpy as np
 from scipy.stats.mstats import zscore
 from scipy.interpolate import InterpolatedUnivariateSpline
+from scipy.signal import lombscargle
 
 class DataPrep(object):
 
@@ -66,15 +67,15 @@ class DataPrep(object):
 
         print "x min: ", self.position.min()
         print "x max: ", self.position.max()
-        ratio = float(union.size - pos.size)/union.size
-        print "Rel. amount of gaps: %.2f%%" %(100.0*ratio)
 
         # use mean from an expoential distribution
         print "Mean gap length: ", self.gap_length.mean()
 
         print "Size of array: ", union.size
-        print "Number of gaps: ", self.gap_length.size
         if self.gap_length.size > 0:
+            ratio = float(union.size - pos.size)/union.size
+            print "Rel. amount of gaps: %.2f%%" %(100.0*ratio)
+            print "Number of gaps: ", self.gap_length.size
             print "Max gap size: ", self.gap_length.max()
 
     def _gap_lenght(self, position):
@@ -119,3 +120,14 @@ class Spline(InterpolatedUnivariateSpline):
                      dtype=[(ordinate, float), (abscissa, int)])
         x = x.view(np.recarray)
         return x
+
+class LombScargle(object):
+
+    def __init__(self, x, y, f):
+        self.x = x
+        self.y = y
+        self.f = f
+
+    def __call__(self):
+        pgram = lombscargle(self.x, self.y, self.f)
+        return self.f, pgram
