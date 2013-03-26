@@ -18,7 +18,8 @@ from scipy.signal import lombscargle
 
 class DataPrep(object):
 
-    def __init__(self, data, bgdata, crop=None, fill=False, normalize=True):
+    def __init__(self, data, bgdata, crop=None, fill=False, normalize=True,
+                 down_sampling=0):
         super(DataPrep, self).__init__()
 
         self.gap_position = None
@@ -42,8 +43,23 @@ class DataPrep(object):
         if fill:
             self._fill_missing()
 
+        if down_sampling != 0:
+            self._down_sample(down_sampling)
+
         if self.gap_length is None:
             self._gap_lenght(self.position)
+
+    def _down_sample(self, ds_factor=1):
+        if ds_factor < 0 or not isinstance(ds_factor, int):
+            raise ValueError("Down sampling factor must be a positive integer")
+        idx = np.arange(0, self.position.size, ds_factor)
+
+        if idx.size < 10:
+            raise ValueError(("Downsampling factor is do small to return "
+                              "useful arrys "))
+
+        self.counts = self.counts[idx]
+        self.position = self.position[idx]
 
     def _normalize(self):
         self.counts = zscore(self.counts)

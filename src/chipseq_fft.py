@@ -71,17 +71,19 @@ if __name__ == "__main__":
                         nargs=0, help='Plot a welche periodigram.')
     parser.add_argument('--nfft', dest='nfft', type=int, default=256,
                         help="Window size for the Welch periodigram.")
-
+    parser.add_argument('-d', '--down-samling-factor', dest="dsfac", type=int,
+                        default=0,
+                        help=('Downsampling for the data by factor '
+                              '(default=0, i.e. no down sampling)'))
     args = parser.parse_args()
-
 
     bgcounts = np.recfromtxt(args.bgfile, comments="#", delimiter="\t",
                              dtype=int, names=True)
     counts = np.recfromtxt(args.file, comments="#", delimiter="\t", names=True,
                            dtype=int)
 
-    dp = DataPrep(counts, bgcounts, crop=args.crop,
-                  fill=args.fill, normalize=False)
+    dp = DataPrep(counts, bgcounts, crop=args.crop, fill=args.fill,
+                  normalize=False, down_sampling=args.dsfac)
     dp.gap_stats()
 
     if args.lomb_scargle:
@@ -96,9 +98,11 @@ if __name__ == "__main__":
     if args.welch:
         plots.samples(dp.position, dp.counts, window_title="Raw data")
         # xlim = (0.0, 5e-5)
-        fs = np.diff(dp.position).min()
+        fs = 1./np.diff(dp.position).min()
         plots.psd(dp.counts, xlim=args.frange, Fs=fs, NFFT=args.nfft,
                   window=mlab.window_none,
                   window_title="Welch Periodigram")
-        plots.samples(dp.position, dp.counts, window_title="Raw data")
-        plots.show()
+
+
+    plots.samples(dp.position, dp.counts, window_title="Raw data")
+    plots.show()
