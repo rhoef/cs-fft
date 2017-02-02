@@ -41,9 +41,10 @@ def write_files(filename, position, counts, delimiter='\t'):
 def add_counts(counts, lambda_, ratio):
     while True:
         pos = np.random.randint(0, counts.size)
-        length = 10 + np.random.poisson(1)
+        length = 10# + np.random.poisson(1)
         # import pdb; pdb.set_trace()
         height = np.int_(np.random.exponential(lambda_))
+        height = np.random.geometric(lambda_)
         # height = np.random.poisson(1)
         counts[pos:pos+length] += height
 
